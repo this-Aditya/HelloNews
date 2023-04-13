@@ -13,7 +13,7 @@ suspend fun getBreakingNews(
 @Header("Authorization") Authorization: String,
 @Query("country") country: String,
 @Query("pageSize") pageSize: Int
-):Response<List<News>>
+):Response<News>
 
 
 }

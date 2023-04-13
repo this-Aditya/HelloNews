@@ -5,33 +5,38 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.aditya.hellonews.models.Article
 import com.aditya.hellonews.models.News
 import com.aditya.hellonews.repository.NewsRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import retrofit2.Response
 
 private const val TAG = "BreakingNewsViewModel"
 
 class BreakingNewsViewModel(private val repository: NewsRepository) : ViewModel() {
 
-    private val _breakingNews = MutableLiveData<List<News>>()
-    val breakingNews: LiveData<List<News>>
+    private val _breakingNews = MutableLiveData<List<Article>>()
+    val breakingNews: LiveData<List<Article>>
         get() = _breakingNews
 
     fun getBreakingNews(auth: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            delay(6000)
             try {
-                val response: Response<List<News>> = repository.getBreakingNews(auth, "in", 20)
+                val response: Response<News> = repository.getBreakingNews(auth, "in", 20)
                 if (response.isSuccessful) {
-                    _breakingNews.value = response.body()
+                    withContext(Dispatchers.Main) {
+                        _breakingNews.value = response.body()?.articles
+                        Log.i(TAG, "getBreakingNews: ${response.code()}")
+                    }
+
                 } else {
                     Log.i(TAG, "code: ${response.code()} message: ${response.message()}")
                 }
             } catch (e: Exception) {
-                Log.i(TAG, "${e.message}")
+                Log.i(TAG, "error: ${e.message}")
             }
         }
     }
